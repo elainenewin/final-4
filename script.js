@@ -1,316 +1,257 @@
-/* ===== TABS ===== */
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.sim-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-  });
-});
+/* ─────────────────────────────────────────────────────────────
+   CubeFlow — script.js
+   ───────────────────────────────────────────────────────────── */
 
-/* ===== INFO TOGGLES ===== */
-function setupInfoToggle(btnId, panelId) {
-  const btn = document.getElementById(btnId);
-  const panel = document.getElementById(panelId);
-  btn.addEventListener('click', () => {
-    panel.classList.toggle('hidden');
-    btn.textContent = panel.classList.contains('hidden') ? '💡 Why does this matter?' : '💡 Hide explanation';
-  });
-}
-setupInfoToggle('pipette-info-btn', 'pipette-info');
-setupInfoToggle('gel-info-btn', 'gel-info');
-setupInfoToggle('cent-info-btn', 'cent-info');
+// ─── State ────────────────────────────────────────────────────
+let solves   = [];
+let timerInterval = null;
+let startTime     = 0;
+let isRunning     = false;
+let isHolding     = false;
+let holdTimeout   = null;
+let currentScramble = '';
 
-/* ============================================================
-   MICROPIPETTE SIMULATION
-============================================================ */
-const pipetteState = {
-  volume: 10,
-  hasLiquid: false,
-  step: 'choose', // 'choose' | 'aspirate' | 'dispense' | 'done'
-};
+const HOLD_DELAY = 300; // ms to hold space before starting
 
-// Volume buttons
-document.querySelectorAll('.vol-btn').forEach(btn => {
-  if (btn.closest('#tab-pipette')) {
-    btn.addEventListener('click', () => {
-      if (pipetteState.step !== 'choose') return;
-      document.querySelectorAll('#tab-pipette .vol-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      pipetteState.volume = parseInt(btn.dataset.vol);
-      document.getElementById('pipette-vol-display').textContent = `${pipetteState.volume} µL`;
-      setStatus('pipette-status', `Volume set to ${pipetteState.volume} µL. Click the source tube to aspirate.`);
-      pipetteState.step = 'aspirate';
-    });
+// ─── DOM ──────────────────────────────────────────────────────
+const timerDisplay  = document.getElementById('timerDisplay');
+const timerStatus   = document.getElementById('timerStatus');
+const timerHint     = document.getElementById('timerHint');
+const timerRing     = document.querySelector('.timer-ring');
+const scrambleEl    = document.getElementById('scramble');
+const newScrambleBtn= document.getElementById('newScrambleBtn');
+const bestTimeEl    = document.getElementById('bestTime');
+const lastTimeEl    = document.getElementById('lastTime');
+const avgTimeEl     = document.getElementById('avgTime');
+const solveCountEl  = document.getElementById('solveCount');
+const historyList   = document.getElementById('historyList');
+
+// ─── Scramble Generator ───────────────────────────────────────
+const FACES = ['R', 'L', 'U', 'D', 'F', 'B'];
+const MODS  = ['', "'", '2'];
+
+// Opposite faces — avoid same or opposite face back-to-back
+const OPPOSITE = { R:'L', L:'R', U:'D', D:'U', F:'B', B:'F' };
+
+function generateScramble(length = 20) {
+  const moves = [];
+  let lastFace = '';
+  let secondLastFace = '';
+
+  while (moves.length < length) {
+    let face;
+    let attempts = 0;
+    do {
+      face = FACES[Math.floor(Math.random() * FACES.length)];
+      attempts++;
+    } while (
+      attempts < 20 &&
+      (face === lastFace ||
+       (face === OPPOSITE[lastFace] && face === secondLastFace))
+    );
+
+    const mod = MODS[Math.floor(Math.random() * MODS.length)];
+    moves.push(face + mod);
+    secondLastFace = lastFace;
+    lastFace = face;
   }
-});
-
-// Source tube - aspirate
-document.getElementById('source-tube').addEventListener('click', () => {
-  if (pipetteState.step !== 'aspirate') return;
-  pipetteState.hasLiquid = true;
-  pipetteState.step = 'dispense';
-
-  const pipette = document.getElementById('pipette');
-  pipette.classList.add('aspirating');
-  setTimeout(() => pipette.classList.remove('aspirating'), 400);
-
-  document.getElementById('pipette-liquid').style.height = '75%';
-  setStatus('pipette-status', `✅ Aspirated ${pipetteState.volume} µL. Now click the target tube to dispense.`);
-});
-
-// Target tube - dispense
-document.getElementById('target-tube').addEventListener('click', () => {
-  if (pipetteState.step !== 'dispense') return;
-  pipetteState.hasLiquid = false;
-  pipetteState.step = 'done';
-
-  const pipette = document.getElementById('pipette');
-  pipette.classList.add('dispensing');
-  setTimeout(() => pipette.classList.remove('dispensing'), 400);
-
-  document.getElementById('pipette-liquid').style.height = '0%';
-
-  // Calculate fill amount in target based on volume
-  const maxVol = 1000;
-  const fillPct = Math.min((pipetteState.volume / maxVol) * 80 + 10, 80);
-  document.getElementById('target-liquid').style.height = fillPct + '%';
-
-  // Random accuracy 95-100%
-  const acc = (95 + Math.random() * 5).toFixed(1);
-  document.getElementById('accuracy-display').textContent = `✅ Dispensed! Accuracy: ${acc}%`;
-  setStatus('pipette-status', `🧪 Transfer complete. ${pipetteState.volume} µL moved to target. Hit Reset to try again.`);
-});
-
-document.getElementById('pipette-reset').addEventListener('click', () => {
-  pipetteState.step = 'choose';
-  pipetteState.hasLiquid = false;
-  pipetteState.volume = 10;
-  document.getElementById('pipette-liquid').style.height = '0%';
-  document.getElementById('target-liquid').style.height = '0%';
-  document.getElementById('accuracy-display').textContent = '';
-  document.getElementById('pipette-vol-display').textContent = '10 µL';
-  document.querySelectorAll('#tab-pipette .vol-btn').forEach((b, i) => {
-    b.classList.toggle('active', i === 0);
-  });
-  setStatus('pipette-status', 'Choose a volume and click the source tube.');
-});
-
-/* ============================================================
-   GEL ELECTROPHORESIS SIMULATION
-============================================================ */
-const gelState = {
-  lanes: { 0: null, 1: null, 2: null, 3: null },
-  running: false,
-  bands: [], // { el, speed, position, max }
-  animId: null,
-};
-
-const voltSlider = document.getElementById('volt-slider');
-const voltLabel = document.getElementById('volt-label');
-voltSlider.addEventListener('input', () => { voltLabel.textContent = voltSlider.value; });
-
-document.querySelectorAll('.sample-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (gelState.running) return;
-    const lane = parseInt(btn.dataset.lane);
-    if (gelState.lanes[lane]) return; // already loaded
-    gelState.lanes[lane] = btn.dataset.sizes.split(',').map(Number);
-    btn.classList.add('loaded');
-    document.querySelector(`.well[data-lane="${lane}"]`).classList.add('loaded');
-    setStatus(null, null);
-  });
-});
-
-document.getElementById('gel-run').addEventListener('click', () => {
-  if (gelState.running) return;
-  const hasAny = Object.values(gelState.lanes).some(v => v !== null);
-  if (!hasAny) { alert('Load at least one sample first!'); return; }
-
-  gelState.running = true;
-  document.getElementById('gel-run').disabled = true;
-
-  const voltage = parseInt(voltSlider.value);
-  const speedMult = voltage / 80; // normalized
-
-  // Create bands
-  gelState.bands = [];
-  Object.entries(gelState.lanes).forEach(([lane, sizes]) => {
-    if (!sizes) return;
-    const laneEl = document.querySelector(`.gel-lane[data-lane="${lane}"]`);
-    sizes.forEach(size => {
-      const band = document.createElement('div');
-      band.className = 'gel-band';
-      band.style.top = '0px';
-      laneEl.appendChild(band);
-      // Smaller = faster
-      const speed = (1000 / size) * speedMult * 0.4;
-      gelState.bands.push({ el: band, speed, position: 0, max: 190 });
-    });
-  });
-
-  animateBands();
-});
-
-function animateBands() {
-  let allDone = true;
-  gelState.bands.forEach(b => {
-    if (b.position < b.max) {
-      b.position = Math.min(b.position + b.speed, b.max);
-      b.el.style.top = b.position + 'px';
-      allDone = false;
-    }
-  });
-  if (!allDone) {
-    gelState.animId = requestAnimationFrame(animateBands);
-  } else {
-    gelState.running = false;
-  }
+  return moves;
 }
 
-document.getElementById('gel-reset').addEventListener('click', () => {
-  if (gelState.animId) cancelAnimationFrame(gelState.animId);
-  gelState.running = false;
-  gelState.bands = [];
-  Object.keys(gelState.lanes).forEach(k => gelState.lanes[k] = null);
+function renderScramble(moves) {
+  scrambleEl.innerHTML = moves.map(m => {
+    const face = m[0];
+    return `<span class="move-${face}">${m}</span>`;
+  }).join(' ');
+}
 
-  document.querySelectorAll('.gel-lane').forEach(l => l.innerHTML = '');
-  document.querySelectorAll('.well').forEach(w => w.classList.remove('loaded'));
-  document.querySelectorAll('.sample-btn').forEach(b => b.classList.remove('loaded'));
-  document.getElementById('gel-run').disabled = false;
-  voltSlider.value = 80;
-  voltLabel.textContent = 80;
-});
+function newScramble() {
+  scrambleEl.classList.add('updating');
+  setTimeout(() => {
+    const moves = generateScramble();
+    currentScramble = moves.join(' ');
+    renderScramble(moves);
+    scrambleEl.classList.remove('updating');
+  }, 150);
+}
 
-/* ============================================================
-   CENTRIFUGE SIMULATION
-============================================================ */
-const centState = {
-  rpm: 3000,
-  sample: 'blood',
-  running: false,
-  animId: null,
-  currentRpm: 0,
-};
+newScrambleBtn.addEventListener('click', newScramble);
 
-const SAMPLES = {
-  blood: [
-    { label: 'RBCs', pct: 40, color: '#c0392b' },
-    { label: 'Buffy', pct: 5, color: '#f5f5dc' },
-    { label: 'Plasma', pct: 55, color: '#f1c40f55' },
-  ],
-  cells: [
-    { label: 'Pellet', pct: 20, color: '#3498db' },
-    { label: 'Media', pct: 80, color: 'rgba(100,200,255,0.3)' },
-  ],
-  dna: [
-    { label: 'DNA', pct: 15, color: '#2ecc71' },
-    { label: 'Ethanol', pct: 35, color: 'rgba(180,220,255,0.3)' },
-    { label: 'Buffer', pct: 50, color: 'rgba(100,180,255,0.2)' },
-  ],
-};
+// ─── Timer ────────────────────────────────────────────────────
+function formatTime(ms) {
+  if (ms < 60000) {
+    return (ms / 1000).toFixed(2);
+  }
+  const m = Math.floor(ms / 60000);
+  const s = ((ms % 60000) / 1000).toFixed(2).padStart(5, '0');
+  return `${m}:${s}`;
+}
 
-const rpmSlider = document.getElementById('rpm-slider');
-const rpmLabel = document.getElementById('rpm-label');
-rpmSlider.addEventListener('input', () => {
-  centState.rpm = parseInt(rpmSlider.value);
-  rpmLabel.textContent = centState.rpm.toLocaleString();
-});
+function startTimer() {
+  startTime = Date.now();
+  isRunning = true;
 
-document.querySelectorAll('#tab-centrifuge .vol-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (centState.running) return;
-    document.querySelectorAll('#tab-centrifuge .vol-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    centState.sample = btn.dataset.sample;
-    resetCentResult();
-  });
-});
+  timerRing.classList.remove('holding', 'stopped');
+  timerRing.classList.add('running');
+  timerStatus.textContent = 'SOLVING…';
+  timerHint.textContent   = 'Press Space to stop';
 
-document.getElementById('centrifuge-run').addEventListener('click', () => {
-  if (centState.running) return;
-  centState.running = true;
-  document.getElementById('centrifuge-run').disabled = true;
-  resetCentResult();
+  timerInterval = setInterval(() => {
+    const elapsed = Date.now() - startTime;
+    timerDisplay.textContent = formatTime(elapsed);
+  }, 10);
+}
 
-  const rotor = document.getElementById('centrifuge-rotor');
-  const display = document.getElementById('rpm-display');
-  const targetRpm = centState.rpm;
-  let currentRpm = 0;
+function stopTimer() {
+  if (!isRunning) return;
 
-  // Spin up
-  const spinUpInterval = setInterval(() => {
-    currentRpm = Math.min(currentRpm + targetRpm / 30, targetRpm);
-    const duration = (60 / currentRpm).toFixed(2);
-    rotor.style.animationDuration = duration + 's';
-    rotor.classList.add('spinning');
-    display.textContent = Math.round(currentRpm).toLocaleString() + ' RPM';
+  clearInterval(timerInterval);
+  isRunning = false;
 
-    if (currentRpm >= targetRpm) {
-      clearInterval(spinUpInterval);
-      setTimeout(() => spinDown(), 2500);
-    }
-  }, 80);
+  const elapsed = Date.now() - startTime;
+  const timeStr = formatTime(elapsed);
+  timerDisplay.textContent = timeStr;
 
-  function spinDown() {
-    const spinDownInterval = setInterval(() => {
-      currentRpm = Math.max(currentRpm - targetRpm / 20, 0);
-      if (currentRpm > 0) {
-        const duration = (60 / currentRpm).toFixed(2);
-        rotor.style.animationDuration = duration + 's';
+  timerRing.classList.remove('running', 'holding');
+  timerRing.classList.add('stopped');
+
+  timerStatus.textContent = 'SOLVED!';
+  timerHint.textContent   = 'Hold Space for next solve';
+
+  recordSolve(elapsed, timeStr);
+
+  setTimeout(() => {
+    timerRing.classList.remove('stopped');
+    timerStatus.textContent = 'HOLD SPACE TO START';
+    timerHint.textContent   = 'Release to begin timing';
+  }, 2000);
+}
+
+// ─── Keyboard Logic ───────────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if (e.code !== 'Space') return;
+  e.preventDefault();
+
+  if (isRunning) {
+    stopTimer();
+    return;
+  }
+
+  if (!isHolding) {
+    isHolding = true;
+    timerRing.classList.add('holding');
+    timerDisplay.style.color = '';
+    timerStatus.textContent = 'HOLD…';
+    timerHint.textContent   = 'Keep holding…';
+
+    holdTimeout = setTimeout(() => {
+      if (isHolding) {
+        timerStatus.textContent = 'READY!';
+        timerHint.textContent   = 'Release to start!';
       }
-      display.textContent = Math.round(currentRpm).toLocaleString() + ' RPM';
-
-      if (currentRpm <= 0) {
-        clearInterval(spinDownInterval);
-        rotor.classList.remove('spinning');
-        display.textContent = '0 RPM';
-        centState.running = false;
-        document.getElementById('centrifuge-run').disabled = false;
-        showCentResult();
-      }
-    }, 60);
+    }, HOLD_DELAY);
   }
 });
 
-function resetCentResult() {
-  const afterLayers = document.getElementById('after-layers');
-  afterLayers.innerHTML = '';
-}
+document.addEventListener('keyup', (e) => {
+  if (e.code !== 'Space') return;
+  e.preventDefault();
 
-function showCentResult() {
-  const layers = SAMPLES[centState.sample];
-  const afterLayers = document.getElementById('after-layers');
-  afterLayers.innerHTML = '';
-  layers.forEach(layer => {
-    const div = document.createElement('div');
-    div.className = 'layer';
-    div.style.height = layer.pct + '%';
-    div.style.background = layer.color;
-    div.textContent = layer.label;
-    afterLayers.appendChild(div);
-  });
-}
+  if (isRunning) return;
 
-document.getElementById('centrifuge-reset').addEventListener('click', () => {
-  centState.running = false;
-  centState.currentRpm = 0;
-  document.getElementById('centrifuge-rotor').classList.remove('spinning');
-  document.getElementById('rpm-display').textContent = '0 RPM';
-  document.getElementById('centrifuge-run').disabled = false;
-  resetCentResult();
-  rpmSlider.value = 3000;
-  rpmLabel.textContent = '3,000';
-  centState.rpm = 3000;
-  document.querySelectorAll('#tab-centrifuge .vol-btn').forEach((b, i) => {
-    b.classList.toggle('active', i === 0);
-  });
-  centState.sample = 'blood';
+  clearTimeout(holdTimeout);
+
+  if (isHolding) {
+    isHolding = false;
+
+    const elapsed = Date.now() - (window._holdStart || Date.now());
+    timerRing.classList.remove('holding');
+    startTimer();
+  }
 });
 
-/* ===== UTILITY ===== */
-function setStatus(id, text) {
-  if (!id) return;
-  const el = document.getElementById(id);
-  if (el && text) el.textContent = text;
+// ─── Stats & History ──────────────────────────────────────────
+function recordSolve(ms, timeStr) {
+  const solve = {
+    time: ms,
+    display: timeStr,
+    scramble: currentScramble,
+    date: new Date()
+  };
+
+  solves.unshift(solve); // newest first
+
+  updateStats();
+  renderHistory();
+  newScramble();
 }
+
+function getBest() {
+  if (!solves.length) return null;
+  return solves.reduce((a, b) => a.time < b.time ? a : b);
+}
+
+function getAverage(n) {
+  const slice = solves.slice(0, n);
+  if (!slice.length) return null;
+  const sum = slice.reduce((a, b) => a + b.time, 0);
+  return sum / slice.length;
+}
+
+function updateStats() {
+  const best = getBest();
+  const avg  = getAverage(5);
+  const last = solves[0];
+
+  solveCountEl.textContent = solves.length;
+
+  if (last) {
+    lastTimeEl.textContent = last.display;
+  }
+
+  if (best) {
+    const prevBest = bestTimeEl.textContent;
+    bestTimeEl.textContent = best.display;
+
+    // Flash if new record
+    if (prevBest !== '--' && best.display !== prevBest) {
+      bestTimeEl.classList.remove('new-record');
+      void bestTimeEl.offsetWidth;
+      bestTimeEl.classList.add('new-record');
+    }
+  }
+
+  if (avg !== null) {
+    avgTimeEl.textContent = formatTime(avg);
+  }
+}
+
+function renderHistory() {
+  const MAX_SHOWN = 5;
+  const best = getBest();
+
+  if (!solves.length) {
+    historyList.innerHTML = '<div class="history-empty">No solves yet. Press Space to start!</div>';
+    return;
+  }
+
+  const items = solves.slice(0, MAX_SHOWN);
+  historyList.innerHTML = items.map((s, i) => {
+    const isBest = best && s.time === best.time;
+    return `
+      <div class="history-item ${isBest ? 'best-solve' : ''}">
+        <span class="history-num">#${i + 1}</span>
+        <span class="history-time">${s.display}</span>
+        <span class="history-scramble">${s.scramble}</span>
+        ${isBest ? '<span class="history-badge">BEST</span>' : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── Init ─────────────────────────────────────────────────────
+(function init() {
+  const moves = generateScramble();
+  currentScramble = moves.join(' ');
+  renderScramble(moves);
+})();

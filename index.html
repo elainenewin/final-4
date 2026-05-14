@@ -2,258 +2,81 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Biotech Lab Interactive</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CubeFlow</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
 </head>
 <body>
 
-  <!-- NAV -->
-  <nav>
-    <div class="nav-logo">🧬 BioLab<span>Interactive</span></div>
-    <div class="nav-links">
-      <a href="#" class="active">Simulations</a>
-      <a href="#">Learn</a>
-      <a href="#">About</a>
-    </div>
-  </nav>
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-bg-grid"></div>
-    <div class="hero-content">
-      <p class="hero-eyebrow">Virtual Lab Simulations</p>
-      <h1>Do the science.<br/><span>Understand it.</span></h1>
-      <p class="hero-sub">Interactive simulations of core biotech lab techniques. No lab coat required.</p>
-      <a href="#simulations" class="cta-btn">Start Learning →</a>
-    </div>
-    <div class="hero-orbs">
-      <div class="orb orb1"></div>
-      <div class="orb orb2"></div>
-      <div class="orb orb3"></div>
-    </div>
-  </section>
+  <div class="container">
 
-  <!-- SIMULATION TABS -->
-  <section id="simulations" class="sim-section">
-    <div class="sim-tabs">
-      <button class="tab-btn active" data-tab="pipette">🧪 Micropipette</button>
-      <button class="tab-btn" data-tab="gel">🧫 Gel Electrophoresis</button>
-      <button class="tab-btn" data-tab="centrifuge">🌀 Centrifuge</button>
-    </div>
-
-    <!-- ===== MICROPIPETTE ===== -->
-    <div class="sim-panel active" id="tab-pipette">
-      <div class="sim-layout">
-        <div class="sim-controls">
-          <h2>Micropipette Simulator</h2>
-          <p class="sim-desc">Select a volume, aspirate from the source, and dispense into the target tube.</p>
-
-          <div class="control-group">
-            <label>Volume Setting</label>
-            <div class="volume-btns">
-              <button class="vol-btn active" data-vol="10">10 µL</button>
-              <button class="vol-btn" data-vol="100">100 µL</button>
-              <button class="vol-btn" data-vol="1000">1000 µL</button>
-            </div>
-          </div>
-
-          <div class="control-group">
-            <label>Status</label>
-            <div class="status-box" id="pipette-status">Choose a volume and click the source tube.</div>
-          </div>
-
-          <div class="info-toggle">
-            <button class="info-btn" id="pipette-info-btn">💡 Why does this matter?</button>
-            <div class="info-panel hidden" id="pipette-info">
-              Pipettes are the most-used tools in biotech. Precision matters — even 1 µL error can ruin a PCR reaction or assay. Scientists use different sizes for different volumes.
-            </div>
-          </div>
-
-          <button class="reset-btn" id="pipette-reset">↺ Reset</button>
+    <!-- Header -->
+    <header>
+      <div class="logo">
+        <div class="cube-icon">
+          <div class="face top"></div>
+          <div class="face left"></div>
+          <div class="face right"></div>
         </div>
-
-        <div class="sim-stage" id="pipette-stage">
-          <div class="pipette-wrapper">
-            <div class="pipette" id="pipette">
-              <div class="pipette-body">
-                <div class="pipette-volume-display" id="pipette-vol-display">10 µL</div>
-              </div>
-              <div class="pipette-tip">
-                <div class="pipette-liquid" id="pipette-liquid"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="tubes-row">
-            <div class="tube-container">
-              <div class="tube source-tube" id="source-tube">
-                <div class="tube-liquid source-liquid" id="source-liquid"></div>
-              </div>
-              <div class="tube-label">Source</div>
-            </div>
-            <div class="tube-container">
-              <div class="tube target-tube" id="target-tube">
-                <div class="tube-liquid target-liquid" id="target-liquid" style="height:0%"></div>
-              </div>
-              <div class="tube-label">Target</div>
-            </div>
-          </div>
-
-          <div class="accuracy-display" id="accuracy-display"></div>
-        </div>
+        <span class="logo-text">Cube<span class="accent">Flow</span></span>
       </div>
-    </div>
+      <div class="session-badge">SESSION ACTIVE</div>
+    </header>
 
-    <!-- ===== GEL ELECTROPHORESIS ===== -->
-    <div class="sim-panel" id="tab-gel">
-      <div class="sim-layout">
-        <div class="sim-controls">
-          <h2>Gel Electrophoresis</h2>
-          <p class="sim-desc">Load your DNA samples into the wells, set the voltage, and watch the bands separate.</p>
+    <!-- Scramble Section -->
+    <section class="scramble-section">
+      <div class="section-label">SCRAMBLE</div>
+      <div class="scramble-display" id="scramble">R U R' F2 L D B' U2 R' L</div>
+      <button class="new-scramble-btn" id="newScrambleBtn" title="Generate new scramble">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+        New Scramble
+      </button>
+    </section>
 
-          <div class="control-group">
-            <label>Voltage: <span id="volt-label">80</span> V</label>
-            <input type="range" id="volt-slider" min="40" max="150" value="80" class="styled-slider"/>
-          </div>
-
-          <div class="control-group">
-            <label>Load Samples</label>
-            <div class="sample-btns">
-              <button class="sample-btn" data-lane="0" data-sizes="100,300,500">Sample A</button>
-              <button class="sample-btn" data-lane="1" data-sizes="200,400,800">Sample B</button>
-              <button class="sample-btn" data-lane="2" data-sizes="150,350,600,900">Sample C</button>
-              <button class="sample-btn ladder" data-lane="3" data-sizes="100,200,400,800">Ladder</button>
-            </div>
-          </div>
-
-          <div class="gel-btns">
-            <button class="run-btn" id="gel-run">▶ Run Gel</button>
-            <button class="reset-btn" id="gel-reset">↺ Reset</button>
-          </div>
-
-          <div class="info-toggle">
-            <button class="info-btn" id="gel-info-btn">💡 Why does this matter?</button>
-            <div class="info-panel hidden" id="gel-info">
-              DNA has a negative charge. When electricity flows through the gel, DNA moves toward the positive end. Smaller fragments travel faster — farther from the wells. This lets us identify and compare DNA sizes.
-            </div>
-          </div>
-        </div>
-
-        <div class="sim-stage" id="gel-stage">
-          <div class="gel-box">
-            <div class="gel-negative">— (negative)</div>
-            <div class="gel-wells" id="gel-wells">
-              <div class="well" data-lane="0"></div>
-              <div class="well" data-lane="1"></div>
-              <div class="well" data-lane="2"></div>
-              <div class="well" data-lane="3"></div>
-            </div>
-            <div class="gel-lanes" id="gel-lanes">
-              <div class="gel-lane" data-lane="0"></div>
-              <div class="gel-lane" data-lane="1"></div>
-              <div class="gel-lane" data-lane="2"></div>
-              <div class="gel-lane" data-lane="3"></div>
-            </div>
-            <div class="gel-positive">+ (positive)</div>
-          </div>
-          <div class="gel-legend">
-            <span class="legend-item"><span class="dot cyan"></span> Sample A</span>
-            <span class="legend-item"><span class="dot purple"></span> Sample B</span>
-            <span class="legend-item"><span class="dot teal"></span> Sample C</span>
-            <span class="legend-item"><span class="dot white"></span> Ladder</span>
-          </div>
-        </div>
+    <!-- Timer Section -->
+    <section class="timer-section">
+      <div class="timer-ring">
+        <div class="timer-display" id="timerDisplay">0.00</div>
       </div>
-    </div>
+      <div class="timer-status" id="timerStatus">HOLD SPACE TO START</div>
+      <div class="timer-hint" id="timerHint">Release to begin timing</div>
+    </section>
 
-    <!-- ===== CENTRIFUGE ===== -->
-    <div class="sim-panel" id="tab-centrifuge">
-      <div class="sim-layout">
-        <div class="sim-controls">
-          <h2>Centrifuge Simulator</h2>
-          <p class="sim-desc">Load sample tubes, set RPM, and watch the components separate by density.</p>
-
-          <div class="control-group">
-            <label>Speed: <span id="rpm-label">3000</span> RPM</label>
-            <input type="range" id="rpm-slider" min="500" max="12000" value="3000" step="500" class="styled-slider"/>
-          </div>
-
-          <div class="control-group">
-            <label>Sample Type</label>
-            <div class="volume-btns">
-              <button class="vol-btn active" data-sample="blood">Blood</button>
-              <button class="vol-btn" data-sample="cells">Cell Culture</button>
-              <button class="vol-btn" data-sample="dna">DNA Mix</button>
-            </div>
-          </div>
-
-          <div class="gel-btns">
-            <button class="run-btn" id="centrifuge-run">▶ Start Spin</button>
-            <button class="reset-btn" id="centrifuge-reset">↺ Reset</button>
-          </div>
-
-          <div class="info-toggle">
-            <button class="info-btn" id="cent-info-btn">💡 Why does this matter?</button>
-            <div class="info-panel hidden" id="cent-info">
-              Centrifuges spin samples at high speed, creating a centrifugal force that separates particles by density. Heavier particles move to the bottom. This is used to isolate DNA, cells, proteins, and more.
-            </div>
-          </div>
-        </div>
-
-        <div class="sim-stage" id="centrifuge-stage">
-          <div class="centrifuge-machine" id="centrifuge-machine">
-            <div class="centrifuge-lid">
-              <div class="centrifuge-rotor" id="centrifuge-rotor">
-                <div class="rotor-arm arm1">
-                  <div class="rotor-tube" id="rtube1"></div>
-                </div>
-                <div class="rotor-arm arm2">
-                  <div class="rotor-tube" id="rtube2"></div>
-                </div>
-                <div class="rotor-arm arm3">
-                  <div class="rotor-tube" id="rtube3"></div>
-                </div>
-                <div class="rotor-arm arm4">
-                  <div class="rotor-tube" id="rtube4"></div>
-                </div>
-                <div class="rotor-center"></div>
-              </div>
-            </div>
-            <div class="centrifuge-body">
-              <div class="centrifuge-display">
-                <span id="rpm-display">0 RPM</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="tube-result-row" id="tube-result-row">
-            <div class="result-tube-wrap">
-              <div class="result-label">Before</div>
-              <div class="result-tube" id="before-tube">
-                <div class="result-layer mixed-layer" id="before-sample"></div>
-              </div>
-            </div>
-            <div class="arrow-divider">→</div>
-            <div class="result-tube-wrap">
-              <div class="result-label">After</div>
-              <div class="result-tube" id="after-tube">
-                <div class="result-layers" id="after-layers"></div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <!-- Stats Section -->
+    <section class="stats-section">
+      <div class="stat-card">
+        <div class="stat-label">BEST</div>
+        <div class="stat-value" id="bestTime">--</div>
       </div>
-    </div>
+      <div class="stat-card accent-card">
+        <div class="stat-label">LAST</div>
+        <div class="stat-value" id="lastTime">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">AVERAGE</div>
+        <div class="stat-value" id="avgTime">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">SOLVES</div>
+        <div class="stat-value" id="solveCount">0</div>
+      </div>
+    </section>
 
-  </section>
+    <!-- History Section -->
+    <section class="history-section">
+      <div class="section-label">RECENT SOLVES</div>
+      <div class="history-list" id="historyList">
+        <div class="history-empty">No solves yet. Press Space to start!</div>
+      </div>
+    </section>
 
-  <!-- FOOTER -->
-  <footer>
-    <p>🧬 BioLab Interactive — Learn science by doing it.</p>
-  </footer>
+  </div>
 
   <script src="script.js"></script>
 </body>
