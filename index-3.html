@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CubeTimer 🎲</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- CONFETTI CANVAS -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <span class="logo-cube">🎲</span>
+      <span class="logo-text">CubeTimer</span>
+    </div>
+    <div class="header-controls">
+      <button class="icon-btn" id="mute-btn" title="Toggle Sound">
+        <span id="mute-icon">🔊</span>
+      </button>
+      <button class="icon-btn" id="theme-btn" title="Toggle Theme">
+        <span id="theme-icon">🌙</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <main class="main-layout">
+
+    <!-- CENTER COLUMN -->
+    <div class="center-col">
+
+      <!-- INSTRUCTION CARD -->
+      <div class="instruction-card" id="instruction-card">
+        <span id="instruction-text">Hold <kbd>SPACE</kbd> to get ready</span>
+      </div>
+
+      <!-- 3D RUBIK'S CUBE -->
+      <div class="cube-showcase">
+        <div class="cube-scene">
+          <div class="rubik-cube" id="rubik-cube">
+
+            <!-- FRONT: Red -->
+            <div class="cube-face face-front">
+              <div class="sticker" style="background:var(--red)"></div>
+              <div class="sticker" style="background:var(--red)"></div>
+              <div class="sticker" style="background:var(--red)"></div>
+              <div class="sticker" style="background:var(--red)"></div>
+              <div class="sticker" style="background:var(--red)"></div>
+              <div class="sticker" style="background:var(--red)"></div>
+              <div class="sticker" style="background:var(--red)"></div>
+              <div class="sticker" style="background:var(--red)"></div>
+              <div class="sticker" style="background:var(--red)"></div>
+            </div>
+
+            <!-- BACK: Orange -->
+            <div class="cube-face face-back">
+              <div class="sticker" style="background:var(--orange)"></div>
+              <div class="sticker" style="background:var(--orange)"></div>
+              <div class="sticker" style="background:var(--orange)"></div>
+              <div class="sticker" style="background:var(--orange)"></div>
+              <div class="sticker" style="background:var(--orange)"></div>
+              <div class="sticker" style="background:var(--orange)"></div>
+              <div class="sticker" style="background:var(--orange)"></div>
+              <div class="sticker" style="background:var(--orange)"></div>
+              <div class="sticker" style="background:var(--orange)"></div>
+            </div>
+
+            <!-- RIGHT: Blue -->
+            <div class="cube-face face-right">
+              <div class="sticker" style="background:var(--blue)"></div>
+              <div class="sticker" style="background:var(--blue)"></div>
+              <div class="sticker" style="background:var(--blue)"></div>
+              <div class="sticker" style="background:var(--blue)"></div>
+              <div class="sticker" style="background:var(--blue)"></div>
+              <div class="sticker" style="background:var(--blue)"></div>
+              <div class="sticker" style="background:var(--blue)"></div>
+              <div class="sticker" style="background:var(--blue)"></div>
+              <div class="sticker" style="background:var(--blue)"></div>
+            </div>
+
+            <!-- LEFT: Green -->
+            <div class="cube-face face-left">
+              <div class="sticker" style="background:var(--green)"></div>
+              <div class="sticker" style="background:var(--green)"></div>
+              <div class="sticker" style="background:var(--green)"></div>
+              <div class="sticker" style="background:var(--green)"></div>
+              <div class="sticker" style="background:var(--green)"></div>
+              <div class="sticker" style="background:var(--green)"></div>
+              <div class="sticker" style="background:var(--green)"></div>
+              <div class="sticker" style="background:var(--green)"></div>
+              <div class="sticker" style="background:var(--green)"></div>
+            </div>
+
+            <!-- TOP: Yellow -->
+            <div class="cube-face face-top">
+              <div class="sticker" style="background:var(--yellow)"></div>
+              <div class="sticker" style="background:var(--yellow)"></div>
+              <div class="sticker" style="background:var(--yellow)"></div>
+              <div class="sticker" style="background:var(--yellow)"></div>
+              <div class="sticker" style="background:var(--yellow)"></div>
+              <div class="sticker" style="background:var(--yellow)"></div>
+              <div class="sticker" style="background:var(--yellow)"></div>
+              <div class="sticker" style="background:var(--yellow)"></div>
+              <div class="sticker" style="background:var(--yellow)"></div>
+            </div>
+
+            <!-- BOTTOM: White -->
+            <div class="cube-face face-bottom">
+              <div class="sticker" style="background:var(--white)"></div>
+              <div class="sticker" style="background:var(--white)"></div>
+              <div class="sticker" style="background:var(--white)"></div>
+              <div class="sticker" style="background:var(--white)"></div>
+              <div class="sticker" style="background:var(--white)"></div>
+              <div class="sticker" style="background:var(--white)"></div>
+              <div class="sticker" style="background:var(--white)"></div>
+              <div class="sticker" style="background:var(--white)"></div>
+              <div class="sticker" style="background:var(--white)"></div>
+            </div>
+
+          </div>
+        </div>
+        <div class="cube-label" id="cube-label">Idle</div>
+      </div>
+
+      <!-- TIMER DISPLAY -->
+      <div class="timer-wrap">
+        <div class="timer-ring" id="timer-ring">
+          <div class="timer-display" id="timer-display">0.00</div>
+        </div>
+        <div class="timer-status" id="timer-status">ready</div>
+      </div>
+
+      <!-- STATS CARDS -->
+      <div class="stats-grid">
+        <div class="stat-card red-card">
+          <div class="stat-label">Best</div>
+          <div class="stat-value" id="stat-best">--</div>
+        </div>
+        <div class="stat-card blue-card">
+          <div class="stat-label">Ao5</div>
+          <div class="stat-value" id="stat-ao5">--</div>
+        </div>
+        <div class="stat-card green-card">
+          <div class="stat-label">Ao12</div>
+          <div class="stat-value" id="stat-ao12">--</div>
+        </div>
+        <div class="stat-card yellow-card">
+          <div class="stat-label">Mean</div>
+          <div class="stat-value" id="stat-mean">--</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR: SOLVE HISTORY -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">Solves</h2>
+        <button class="clear-btn" id="clear-btn">Clear All</button>
+      </div>
+      <div class="solve-list" id="solve-list">
+        <div class="empty-state">
+          <span class="empty-icon">⏱️</span>
+          <p>No solves yet!<br/>Press Space to start.</p>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- MOBILE CONTROLS (shown on mobile only) -->
+  <div class="mobile-tap-hint" id="mobile-tap-hint">
+    Tap & hold to get ready
+  </div>
+
+  <!-- HIDDEN TOUCH TARGET -->
+  <div class="touch-target" id="touch-target"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
